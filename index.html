@@ -22,6 +22,14 @@ main{max-width:480px;margin:-40px auto 0;padding:0 16px 32px}
 .mode button.aktif{background:var(--hutan);color:#fff}
 .judul{display:block;font-size:14px;color:var(--redam);margin:18px 0 8px}
 #pilihNama{width:100%;padding:14px;border:1.5px solid var(--garis);border-radius:12px;font-size:16px;font-weight:600;background:#fff;color:var(--tinta)}
+#pin{width:100%;padding:14px;border:1.5px solid var(--garis);border-radius:12px;font-size:18px;letter-spacing:6px;background:#fff;color:var(--tinta)}
+#pin:focus-visible{outline:3px solid var(--kelopak)}
+#kamera{position:fixed;inset:0;z-index:50;background:rgba(20,30,25,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px}
+#kamera video{width:100%;max-width:560px;border-radius:16px;background:#000;transform:scaleX(-1)}
+#kamera .aksi{display:flex;gap:12px}
+#kamera button{border:0;border-radius:12px;padding:14px 22px;font-size:16px;font-weight:700}
+#jepret{background:var(--bunga);color:#fff}
+#batalKamera{background:#fff;color:var(--tinta)}
 #pilihNama:focus-visible{outline:3px solid var(--kelopak)}
 .nama button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%;padding:13px 14px;border:1.5px solid var(--garis);border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:var(--tinta)}
 .nama button.pilih{border-color:var(--hutan);background:#EEF5F0}
@@ -50,7 +58,7 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
 .baris:last-child{border-bottom:0}
 .baris .w{color:var(--redam);font-variant-numeric:tabular-nums;text-align:right;flex:none}
 .kosong{color:var(--redam);font-size:14px;padding:8px 4px}
-.hidden{display:none}
+.hidden,#kamera.hidden{display:none}
 </style>
 </head>
 <body>
@@ -69,6 +77,9 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
 
     <span class="judul">Pilih nama</span>
     <select id="pilihNama"></select>
+
+    <span class="judul">PIN</span>
+    <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="4 angka">
 
     <!-- Absen -->
     <div id="panelAbsen">
@@ -99,10 +110,15 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
   <section class="kartu" id="hariIni"><div class="kosong">Memuat…</div></section>
 </main>
 
+<div id="kamera" class="hidden">
+  <video id="vid" autoplay playsinline muted></video>
+  <div class="aksi"><button type="button" id="jepret">Ambil foto</button><button type="button" id="batalKamera">Batal</button></div>
+</div>
+
 <script>
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwK4JxWSGq4K843Tmo6499HKDSjN5FAf0O0Sk4ifbKNrycDwwDKqoIITNJSqYN-T02e/exec';
 const KUNCI = 'absen';
-const DAFTAR_NAMA = [
+let DAFTAR_NAMA = [
   'INTAN NURAINI PUTRI SUDRAJAT',
   'ALFIA RINJANI',
   'TRI RISKA DEWI',
@@ -159,22 +175,31 @@ function gambarNama(){
 }
 $('pilihNama').onchange = e => {
   const n = e.target.value;
-  if(!n){ terpilih = ''; status = null; $('info').className = 'info hidden'; $('infoCuti').className = 'info hidden'; ubahTombol(); return; }
+  if(!n){ terpilih = ''; status = null; $('pin').value = ''; $('info').className = 'info hidden'; $('infoCuti').className = 'info hidden'; ubahTombol(); return; }
   pilihNama(n);
 };
 
 async function pilihNama(n){
   terpilih = n; status = null; $('pilihNama').value = n;
-  try{ localStorage.setItem('absen_nama', n); }catch(e){}
-  ubahTombol();
-  $('pesan').className = 'pesan';
+  try{ localStorage.setItem('absen_nama', n); $('pin').value = localStorage.getItem('absen_pin_'+n) || ''; }catch(e){ $('pin').value = ''; }
   $('infoCuti').className = 'info hidden';
+  $('pesan').className = 'pesan';
+  ubahTombol();
+  await muatStatus();
+}
+
+async function muatStatus(){
+  const n = terpilih, pin = $('pin').value.trim();
+  if(!n) return;
+  status = null; ubahTombol();
+  if(pin.length < 4){ $('info').className = 'info'; $('info').textContent = 'Masukkan PIN kamu.'; return; }
   $('info').className = 'info'; $('info').textContent = 'Mengecek status…';
   try{
     const h = await kirim({aksi:'status', nama:n});
-    if(!h.ok) throw new Error(h.error || 'gagal');
+    if(!h.ok){ const er = new Error(h.error || 'gagal'); er.server = true; throw er; }
     if(terpilih !== n) return;
     status = h;
+    try{ localStorage.setItem('absen_pin_'+n, pin); }catch(e){}
     let t = '';
     if(h.status==='masuk') t = 'Belum absen hari ini. Kirim akan tercatat sebagai absen masuk.';
     if(h.status==='pulang') t = 'Sudah masuk pukul ' + h.jamMasuk + '. Kirim akan tercatat sebagai absen pulang.';
@@ -184,39 +209,77 @@ async function pilihNama(n){
     $('infoCuti').textContent = 'Cuti terpakai tahun ini: ' + h.cutiTahunIni + ' hari.';
     $('infoCuti').className = 'info';
   }catch(e){
-    $('info').textContent = 'Status belum bisa dimuat (' + (e && e.message ? e.message : 'tidak ada koneksi') + '). Pilih nama lagi untuk mencoba ulang.';
+    if(e.server){
+      $('info').textContent = e.message;
+      if(e.message === 'PIN salah'){ try{ localStorage.removeItem('absen_pin_'+n); }catch(x){} }
+    } else {
+      $('info').textContent = 'Status belum bisa dimuat (' + (e && e.message ? e.message : 'tidak ada koneksi') + '). Ketuk nama lagi untuk mencoba ulang.';
+    }
   }
   ubahTombol();
 }
+
+$('pin').oninput = () => {
+  $('pin').value = $('pin').value.replace(/\D/g,'').slice(0,4);
+  if(terpilih && $('pin').value.length === 4) muatStatus();
+  else if(terpilih){ status = null; ubahTombol(); }
+};
 
 function ubahTombol(){
   const a = $('kirimAbsen'), c = $('kirimCuti');
   if(sedangKirim) return;
   if(!terpilih){ a.disabled = c.disabled = true; a.textContent = c.textContent = 'Pilih nama dulu'; return; }
+  if(!status){ a.disabled = true; a.textContent = $('pin').value.length < 4 ? 'Masukkan PIN dulu' : 'Memuat status…'; c.disabled = true; c.textContent = 'Masukkan PIN dulu'; return; }
   c.disabled = false; c.textContent = 'Ajukan cuti';
-  if(!status){ a.disabled = true; a.textContent = 'Memuat status…'; return; }
   if(status.status==='masuk'){ a.disabled = false; a.textContent = 'Kirim absen masuk'; }
   else if(status.status==='pulang'){ a.disabled = false; a.textContent = 'Kirim absen pulang'; }
   else { a.disabled = true; a.textContent = status.status==='cuti' ? 'Hari ini cuti' : 'Absen hari ini sudah lengkap'; }
 }
 
 /* ---------- foto ---------- */
+function prosesGambar(src, w, h){
+  const sk = Math.min(1, 720 / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * sk); c.height = Math.round(h * sk);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  fotoData = c.toDataURL('image/jpeg', 0.7);
+  $('kotakFoto').innerHTML = '<img alt="Foto selfie" src="'+fotoData+'">';
+}
+
 $('ambilFoto').onchange = e => {
   const f = e.target.files[0];
   if(!f) return;
   const img = new Image();
   const url = URL.createObjectURL(f);
-  img.onload = () => {
-    const s = Math.min(1, 720 / Math.max(img.width, img.height));
-    const c = document.createElement('canvas');
-    c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    fotoData = c.toDataURL('image/jpeg', 0.7);
-    URL.revokeObjectURL(url);
-    $('kotakFoto').innerHTML = '<img alt="Foto selfie" src="'+fotoData+'">';
-  };
+  img.onload = () => { prosesGambar(img, img.width, img.height); URL.revokeObjectURL(url); };
   img.src = url;
 };
+
+// Laptop/PC: buka webcam langsung. HP: tetap kamera depan lewat input file.
+let streamKamera = null;
+function tutupKamera(){
+  if(streamKamera){ streamKamera.getTracks().forEach(t => t.stop()); streamKamera = null; }
+  $('kamera').classList.add('hidden');
+}
+$('kotakFoto').addEventListener('click', async e => {
+  const desktop = !window.matchMedia('(pointer:coarse)').matches;
+  if(!desktop || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return; // pakai input file
+  e.preventDefault();
+  try{
+    streamKamera = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}, audio:false});
+    $('vid').srcObject = streamKamera;
+    $('kamera').classList.remove('hidden');
+  }catch(err){
+    tampilPesan('Kamera tidak bisa dibuka. Izinkan akses kamera di browser, lalu coba lagi.', 'err');
+  }
+});
+$('jepret').onclick = () => {
+  const v = $('vid');
+  if(!v.videoWidth) return;
+  prosesGambar(v, v.videoWidth, v.videoHeight);
+  tutupKamera();
+};
+$('batalKamera').onclick = tutupKamera;
 
 function ambilLokasi(){
   return new Promise(res => {
@@ -232,7 +295,7 @@ function ambilLokasi(){
 function tampilPesan(teks, jenis){ const p = $('pesan'); p.textContent = teks; p.className = 'pesan ' + jenis; }
 
 async function kirim(post){
-  const r = await fetch(URL_SCRIPT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({kunci:KUNCI}, post))});
+  const r = await fetch(URL_SCRIPT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({kunci:KUNCI, pin:$('pin').value.trim()}, post))});
   return r.json();
 }
 
@@ -297,9 +360,11 @@ async function muatHariIni(){
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 gambarNama();
-muatHariIni().then(() => {
+(async () => {
+  try{ const h = await kirim({aksi:'daftar'}); if(h.ok && h.nama.length) DAFTAR_NAMA = h.nama; }catch(e){}
+  await muatHariIni();
   try{ const n = localStorage.getItem('absen_nama'); if(n && DAFTAR_NAMA.indexOf(n) >= 0) pilihNama(n); }catch(e){}
-});
+})();
 </script>
 </body>
 </html>
