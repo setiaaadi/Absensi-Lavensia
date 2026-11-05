@@ -30,7 +30,7 @@ main{max-width:480px;margin:-40px auto 0;padding:0 16px 32px}
 .mode button{border:0;background:transparent;padding:12px;border-radius:9px;font-size:16px;font-weight:600;color:var(--redam)}
 .mode button.aktif{background:var(--hutan);color:#fff}
 .judul{display:block;font-size:14px;color:var(--redam);margin:18px 0 8px}
-#pilihNama{width:100%;padding:14px;border:1.5px solid var(--garis);border-radius:12px;font-size:16px;font-weight:600;background:#fff;color:var(--tinta)}
+#pilihNama,#jenis{width:100%;padding:14px;border:1.5px solid var(--garis);border-radius:12px;font-size:16px;font-weight:600;background:#fff;color:var(--tinta)}
 #pin{width:100%;padding:14px;border:1.5px solid var(--garis);border-radius:12px;font-size:18px;letter-spacing:6px;background:#fff;color:var(--tinta)}
 #pin:focus-visible{outline:3px solid var(--kelopak)}
 #kamera{position:fixed;inset:0;z-index:50;background:rgba(20,30,25,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px}
@@ -39,7 +39,7 @@ main{max-width:480px;margin:-40px auto 0;padding:0 16px 32px}
 #kamera button{border:0;border-radius:12px;padding:14px 22px;font-size:16px;font-weight:700}
 #jepret{background:var(--bunga);color:#fff}
 #batalKamera{background:#fff;color:var(--tinta)}
-#pilihNama:focus-visible{outline:3px solid var(--kelopak)}
+#pilihNama:focus-visible,#jenis:focus-visible{outline:3px solid var(--kelopak)}
 .nama button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%;padding:13px 14px;border:1.5px solid var(--garis);border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:var(--tinta)}
 .nama button.pilih{border-color:var(--hutan);background:#EEF5F0}
 .nama .st{flex:none;font-size:12px;font-weight:600;padding:4px 9px;border-radius:99px;background:var(--latar);color:var(--redam)}
@@ -67,6 +67,9 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
 .baris:last-child{border-bottom:0}
 .baris .w{color:var(--redam);font-variant-numeric:tabular-nums;text-align:right;flex:none}
 .kosong{color:var(--redam);font-size:14px;padding:8px 4px}
+.chip{flex:none;font-size:12px;font-weight:600;padding:4px 9px;border-radius:99px;background:var(--latar);color:var(--redam)}
+.cutiBaris{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--garis);font-size:15px}
+.cutiBaris:last-child{border-bottom:0}
 .hidden,#kamera.hidden{display:none}
 </style>
 </head>
@@ -81,7 +84,7 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
   <section class="kartu">
     <div class="mode">
       <button id="tabAbsen" class="aktif" type="button">Absen</button>
-      <button id="tabCuti" type="button">Cuti</button>
+      <button id="tabCuti" type="button">Tidak hadir</button>
     </div>
 
     <span class="judul">Pilih nama</span>
@@ -103,9 +106,12 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
       <button class="kirim" id="kirimAbsen" type="button" disabled>Pilih nama dulu</button>
     </div>
 
-    <!-- Cuti -->
+    <!-- Cuti / Izin / Sakit -->
     <div id="panelCuti" class="hidden">
       <div class="info hidden" id="infoCuti"></div>
+      <div id="daftarCuti" class="hidden" style="margin-top:14px"></div>
+      <span class="judul">Jenis</span>
+      <select id="jenis"><option value="Cuti">Cuti</option><option value="Izin">Izin</option><option value="Sakit">Sakit</option></select>
       <div class="tanggal" style="margin-top:14px">
         <label>Tanggal<input type="date" id="tglCuti"></label>
       </div>
@@ -135,6 +141,7 @@ let DAFTAR_NAMA = [
 ];
 
 const $ = id => document.getElementById(id);
+const NAMA_JENIS = {CUTI:'Cuti', IZIN:'Izin', SAKIT:'Sakit'};
 let tab = 'absen', terpilih = '', status = null, fotoData = '', sedangKirim = false, baris = [];
 
 /* ---------- jam & tanggal ---------- */
@@ -164,6 +171,7 @@ function setTab(t){
   $('panelCuti').classList.toggle('hidden', t!=='cuti');
   $('pesan').className = 'pesan';
   ubahTombol();
+  if(t==='cuti' && terpilih && $('pin').value.length === 4) muatStatus();
 }
 $('tabAbsen').onclick = () => setTab('absen');
 $('tabCuti').onclick = () => setTab('cuti');
@@ -172,7 +180,7 @@ $('tabCuti').onclick = () => setTab('cuti');
 function statusDariBaris(nama){
   const r = baris.filter(x => x.nama.toLowerCase() === nama.toLowerCase()).pop();
   if(!r) return null;
-  if(r.masuk === 'CUTI') return ['cuti','Cuti'];
+  if(NAMA_JENIS[r.masuk]) return r.cuti === 'Menunggu' ? ['cuti', NAMA_JENIS[r.masuk]+' menunggu'] : ['cuti', NAMA_JENIS[r.masuk]];
   if(r.pulang) return ['selesai','Selesai'];
   return ['masuk','Sudah masuk'];
 }
@@ -189,12 +197,24 @@ $('pilihNama').onchange = e => {
 };
 
 async function pilihNama(n){
+  if(!sudahMintaLokasi){ sudahMintaLokasi = true; ambilLokasi(); }
   terpilih = n; status = null; $('pilihNama').value = n;
   try{ localStorage.setItem('absen_nama', n); $('pin').value = localStorage.getItem('absen_pin_'+n) || ''; }catch(e){ $('pin').value = ''; }
-  $('infoCuti').className = 'info hidden';
+  $('infoCuti').className = 'info hidden'; $('daftarCuti').className = 'hidden';
   $('pesan').className = 'pesan';
   ubahTombol();
   await muatStatus();
+}
+
+function gambarDaftarCuti(list){
+  const el = $('daftarCuti');
+  if(!list.length){ el.className = 'hidden'; el.innerHTML = ''; return; }
+  const kelas = {Disetujui:'masuk', Ditolak:'cuti'};
+  el.innerHTML = '<span class="judul" style="margin:0 0 4px">Catatan kamu</span>' + list.map(c => {
+    const t = new Date(c.tanggal + 'T00:00:00Z').toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+    return '<div class="cutiBaris"><span>'+esc(c.jenis||'Cuti')+' · '+t+'</span><span class="chip st '+(kelas[c.status]||'')+'">'+esc(c.status)+'</span></div>';
+  }).join('');
+  el.className = '';
 }
 
 async function muatStatus(){
@@ -213,10 +233,11 @@ async function muatStatus(){
     if(h.status==='masuk') t = 'Belum absen hari ini. Kirim akan tercatat sebagai absen masuk.';
     if(h.status==='pulang') t = 'Sudah masuk pukul ' + h.jamMasuk + '. Kirim akan tercatat sebagai absen pulang.';
     if(h.status==='selesai') t = 'Absen hari ini sudah lengkap (masuk ' + (h.jamMasuk||'-') + ', pulang ' + h.jamPulang + ').';
-    if(h.status==='cuti') t = 'Hari ini tercatat cuti.';
+    if(h.status==='cuti') t = 'Hari ini tercatat ' + (h.jenis||'cuti').toLowerCase() + '.';
     $('info').textContent = t;
-    $('infoCuti').textContent = 'Cuti terpakai tahun ini: ' + h.cutiTahunIni + ' hari.';
+    $('infoCuti').textContent = 'Tahun ini: cuti ' + h.cutiTahunIni + ' hari · izin ' + (h.izinTahunIni||0) + ' hari · sakit ' + (h.sakitTahunIni||0) + ' hari.' + (h.cutiMenunggu ? ' Menunggu persetujuan: ' + h.cutiMenunggu + ' hari.' : '');
     $('infoCuti').className = 'info';
+    gambarDaftarCuti(h.cutiDaftar || []);
   }catch(e){
     if(e.server){
       $('info').textContent = e.message;
@@ -234,15 +255,21 @@ $('pin').oninput = () => {
   else if(terpilih){ status = null; ubahTombol(); }
 };
 
+function teksTombolJenis(){
+  const j = $('jenis').value;
+  return j === 'Sakit' ? 'Catat sakit' : j === 'Izin' ? 'Ajukan izin' : 'Ajukan cuti';
+}
+$('jenis').onchange = () => ubahTombol();
+
 function ubahTombol(){
   const a = $('kirimAbsen'), c = $('kirimCuti');
   if(sedangKirim) return;
   if(!terpilih){ a.disabled = c.disabled = true; a.textContent = c.textContent = 'Pilih nama dulu'; return; }
   if(!status){ a.disabled = true; a.textContent = $('pin').value.length < 4 ? 'Masukkan PIN dulu' : 'Memuat status…'; c.disabled = true; c.textContent = 'Masukkan PIN dulu'; return; }
-  c.disabled = false; c.textContent = 'Ajukan cuti';
+  c.disabled = false; c.textContent = teksTombolJenis();
   if(status.status==='masuk'){ a.disabled = false; a.textContent = 'Kirim absen masuk'; }
   else if(status.status==='pulang'){ a.disabled = false; a.textContent = 'Kirim absen pulang'; }
-  else { a.disabled = true; a.textContent = status.status==='cuti' ? 'Hari ini cuti' : 'Absen hari ini sudah lengkap'; }
+  else { a.disabled = true; a.textContent = status.status==='cuti' ? 'Hari ini ' + (status.jenis||'cuti').toLowerCase() : 'Absen hari ini sudah lengkap'; }
 }
 
 /* ---------- foto ---------- */
@@ -292,14 +319,24 @@ $('batalKamera').onclick = tutupKamera;
 
 function ambilLokasi(){
   return new Promise(res => {
-    if(!navigator.geolocation) return res(null);
-    navigator.geolocation.getCurrentPosition(
-      p => res({lat:p.coords.latitude, lng:p.coords.longitude}),
-      () => res(null),
-      {enableHighAccuracy:true, timeout:12000, maximumAge:30000}
-    );
+    if(!navigator.geolocation) return res({err:'tidak_didukung'});
+    const ok = p => res({lat:p.coords.latitude, lng:p.coords.longitude});
+    const gagal = e => res({err: e.code === 1 ? 'ditolak' : (e.code === 3 ? 'timeout' : 'tidak_tersedia')});
+    // 1) cepat: lokasi dari Wi-Fi/jaringan (boleh hasil beberapa menit terakhir)
+    navigator.geolocation.getCurrentPosition(ok, e => {
+      if(e.code === 1) return gagal(e);
+      // 2) lambat tapi akurat: GPS satelit, beri waktu lebih lama
+      navigator.geolocation.getCurrentPosition(ok, gagal, {enableHighAccuracy:true, timeout:25000, maximumAge:0});
+    }, {enableHighAccuracy:false, timeout:8000, maximumAge:120000});
   });
 }
+const PESAN_LOKASI = {
+  ditolak: 'Izin lokasi ditolak. Buka Pengaturan HP > Aplikasi (atau Chrome/Safari) > Izin > Lokasi > Izinkan, lalu buka aplikasi lagi.',
+  timeout: 'Lokasi belum didapat (sudah dicoba 30 detik). Pastikan Lokasi HP menyala, dekati jendela atau area terbuka, tunggu sebentar, lalu coba lagi.',
+  tidak_tersedia: 'Lokasi HP belum menyala. Nyalakan Lokasi (GPS) di pengaturan HP, lalu coba lagi.',
+  tidak_didukung: 'Browser ini tidak mendukung lokasi. Buka lewat Chrome atau Safari, jangan dari dalam WhatsApp atau Instagram.'
+};
+let sudahMintaLokasi = false;
 
 function tampilPesan(teks, jenis){ const p = $('pesan'); p.textContent = teks; p.className = 'pesan ' + jenis; }
 
@@ -317,10 +354,15 @@ $('kirimAbsen').onclick = async () => {
   $('pesan').className = 'pesan';
   $('lokasi').className = 'lokasi'; $('lokasi').textContent = 'Mengecek lokasi…';
   const pos = await ambilLokasi();
-  if(pos){ $('lokasi').className = 'lokasi ok'; $('lokasi').textContent = 'Lokasi terdeteksi.'; }
-  else { $('lokasi').className = 'lokasi gagal'; $('lokasi').textContent = 'Lokasi tidak terdeteksi. Aktifkan GPS dan izinkan akses lokasi.'; }
+  if(pos.err){
+    $('lokasi').className = 'lokasi gagal'; $('lokasi').textContent = 'Lokasi tidak terdeteksi.';
+    tampilPesan(PESAN_LOKASI[pos.err] || 'Lokasi wajib aktif untuk absen.', 'err');
+    sedangKirim = false; ubahTombol();
+    return;
+  }
+  $('lokasi').className = 'lokasi ok'; $('lokasi').textContent = 'Lokasi terdeteksi.';
   try{
-    const h = await kirim({aksi, nama:terpilih, foto:fotoData, lat:pos&&pos.lat, lng:pos&&pos.lng});
+    const h = await kirim({aksi, nama:terpilih, foto:fotoData, lat:pos.lat, lng:pos.lng});
     if(h.ok){
       tampilPesan('Absen ' + aksi + ' tercatat pukul ' + h.jam + '. Terima kasih!', 'ok');
       fotoData = ''; $('ambilFoto').value = '';
@@ -338,13 +380,14 @@ $('kirimAbsen').onclick = async () => {
 $('kirimCuti').onclick = async () => {
   if(!terpilih) return;
   const dari = $('tglCuti').value, sampai = dari;
-  if(!dari) return tampilPesan('Pilih tanggal cuti.', 'err');
+  if(!dari) return tampilPesan('Pilih tanggal dulu.', 'err');
   sedangKirim = true; $('kirimCuti').disabled = true; $('kirimCuti').textContent = 'Mengirim…';
   $('pesan').className = 'pesan';
   try{
-    const h = await kirim({aksi:'cuti', nama:terpilih, dari, sampai});
+    const jenis = $('jenis').value;
+    const h = await kirim({aksi:'cuti', nama:terpilih, dari, sampai, jenis});
     if(h.ok){
-      tampilPesan('Cuti tanggal ' + dari + ' tercatat. Total cuti tahun ini: ' + h.cutiTahunIni + ' hari.', 'ok');
+      tampilPesan(h.menunggu ? 'Pengajuan ' + jenis.toLowerCase() + ' tanggal ' + dari + ' terkirim dan menunggu persetujuan.' : 'Sakit tanggal ' + dari + ' tercatat. Semoga lekas sembuh!', 'ok');
       sedangKirim = false;
       await muatHariIni();
       await pilihNama(terpilih);
@@ -361,7 +404,7 @@ async function muatHariIni(){
     if(!h.ok) throw 0;
     baris = h.rows;
     $('hariIni').innerHTML = baris.length
-      ? baris.map(r => '<div class="baris"><span>'+esc(r.nama)+'</span><span class="w">'+(r.masuk==='CUTI' ? 'Cuti' : 'masuk '+(r.masuk||'-')+' · pulang '+(r.pulang||'-'))+'</span></div>').join('')
+      ? baris.map(r => '<div class="baris"><span>'+esc(r.nama)+'</span><span class="w">'+(NAMA_JENIS[r.masuk] ? (r.cuti==='Menunggu' ? NAMA_JENIS[r.masuk]+' (menunggu)' : NAMA_JENIS[r.masuk]) : 'masuk '+(r.masuk||'-')+' · pulang '+(r.pulang||'-'))+'</span></div>').join('')
       : '<div class="kosong">Belum ada yang absen hari ini.</div>';
   }catch(e){ $('hariIni').innerHTML = '<div class="kosong">Daftar belum bisa dimuat.</div>'; }
   gambarNama();
