@@ -26,7 +26,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background
 .tgl{margin-top:4px;color:#C9D3E3;font-size:15px}
 main{max-width:480px;margin:-40px auto 0;padding:0 16px 32px}
 .kartu{background:var(--kertas);border-radius:18px;padding:18px;box-shadow:0 6px 24px rgba(30,59,47,.10)}
-.mode{display:grid;grid-template-columns:1fr 1fr;background:var(--latar);border-radius:12px;padding:4px;gap:4px}
+.mode{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--latar);border-radius:12px;padding:4px;gap:4px}
 .mode button{border:0;background:transparent;padding:12px;border-radius:9px;font-size:16px;font-weight:600;color:var(--redam)}
 .mode button.aktif{background:var(--hutan);color:#fff}
 .judul{display:block;font-size:14px;color:var(--redam);margin:18px 0 8px}
@@ -71,6 +71,26 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
 .cutiBaris{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--garis);font-size:15px}
 .cutiBaris:last-child{border-bottom:0}
 .hidden,#kamera.hidden{display:none}
+.isian{width:100%;padding:14px;border:1.5px solid var(--garis);border-radius:12px;font-size:16px;background:#fff;color:var(--tinta)}
+select.isian{font-weight:600}
+.isian:focus-visible{outline:3px solid var(--kelopak)}
+.ingat{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;color:var(--redam)}
+.ingat input{width:18px;height:18px}
+.sapa{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 12px;font-size:15px;font-weight:600}
+.sapa button{border:0;background:transparent;color:var(--bunga);font-weight:700;font-size:15px;padding:6px 4px}
+.slipBaris{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--garis);font-size:15px}
+.slipBaris:last-child{border-bottom:0}
+.aksiSlip{flex:none;display:flex;gap:8px;align-items:center;color:var(--redam);font-size:14px}
+.rekapBaris{padding:12px 4px;border-bottom:1px solid var(--garis);font-size:14px}
+.rekapBaris:last-child{border-bottom:0}
+.rb1{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.rb1 span{color:var(--redam);flex:none}
+.rb2{margin-top:3px;color:var(--tinta)}
+.rb3{margin-top:4px;display:flex;gap:12px;flex-wrap:wrap}
+.rb3 a{color:var(--bunga);font-weight:600;text-decoration:none}
+.ringkas{background:var(--latar);border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:14px}
+.ringkas b{display:block;font-size:15px;margin-bottom:2px}
+.btnKecil{display:inline-block;border:0;border-radius:10px;background:var(--hutan);color:#fff;font-size:14px;font-weight:600;padding:9px 14px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -81,48 +101,89 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
 </header>
 
 <main>
-  <section class="kartu">
-    <div class="mode">
-      <button id="tabAbsen" class="aktif" type="button">Absen</button>
-      <button id="tabCuti" type="button">Tidak hadir</button>
-    </div>
+  <!-- ===== LOGIN ===== -->
+  <section class="kartu" id="layarLogin">
+    <span class="judul" style="margin-top:0">Nama pengguna</span>
+    <select id="pilihNama" class="isian"></select>
 
-    <span class="judul">Pilih nama</span>
-    <select id="pilihNama"></select>
+    <span class="judul">Kata sandi</span>
+    <input id="sandi" class="isian" type="password" autocomplete="current-password" placeholder="Kata sandi / PIN">
 
-    <span class="judul">PIN</span>
-    <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="4 angka">
+    <label class="ingat"><input type="checkbox" id="ingat" checked> Ingat saya di HP ini</label>
 
-    <!-- Absen -->
-    <div id="panelAbsen">
-      <div class="info hidden" id="info"></div>
-      <span class="judul">Foto selfie</span>
-      <label class="foto" for="ambilFoto" id="kotakFoto">
-        <span>Ketuk untuk foto selfie</span>
-        <small>Kamera depan akan terbuka</small>
-      </label>
-      <input id="ambilFoto" type="file" accept="image/*" capture="user">
-      <div class="lokasi" id="lokasi">Lokasi akan dicek saat kirim.</div>
-      <button class="kirim" id="kirimAbsen" type="button" disabled>Pilih nama dulu</button>
-    </div>
-
-    <!-- Cuti / Izin / Sakit -->
-    <div id="panelCuti" class="hidden">
-      <div class="info hidden" id="infoCuti"></div>
-      <div id="daftarCuti" class="hidden" style="margin-top:14px"></div>
-      <span class="judul">Jenis</span>
-      <select id="jenis"><option value="Cuti">Cuti</option><option value="Izin">Izin</option><option value="Sakit">Sakit</option></select>
-      <div class="tanggal" style="margin-top:14px">
-        <label>Tanggal<input type="date" id="tglCuti"></label>
-      </div>
-      <button class="kirim" id="kirimCuti" type="button" disabled>Pilih nama dulu</button>
-    </div>
-
-    <div class="pesan" id="pesan"></div>
+    <button class="kirim" id="btnMasuk" type="button">Masuk</button>
+    <div class="pesan" id="pesanLogin"></div>
   </section>
 
-  <h2>Hari ini</h2>
-  <section class="kartu" id="hariIni"><div class="kosong">Memuat…</div></section>
+  <!-- ===== APLIKASI ===== -->
+  <div id="layarApp" class="hidden">
+    <div class="sapa"><span id="sapa"></span><button id="btnKeluar" type="button">Keluar</button></div>
+
+    <section class="kartu">
+      <div class="mode" id="tabs">
+        <button id="tab_absen" class="aktif" type="button">Absen</button>
+        <button id="tab_cuti" type="button">Cuti</button>
+        <button id="tab_rekap" class="hidden" type="button">Rekap</button>
+        <button id="tab_slip" type="button">Slip Gaji</button>
+      </div>
+
+      <!-- Absen -->
+      <div id="panelAbsen">
+        <div class="info hidden" id="info"></div>
+        <span class="judul">Foto selfie</span>
+        <label class="foto" for="ambilFoto" id="kotakFoto">
+          <span>Ketuk untuk foto selfie</span>
+          <small>Kamera depan akan terbuka</small>
+        </label>
+        <input id="ambilFoto" type="file" accept="image/*" capture="user">
+        <div class="lokasi" id="lokasi">Lokasi akan dicek saat kirim.</div>
+        <button class="kirim" id="kirimAbsen" type="button" disabled>Memuat status…</button>
+      </div>
+
+      <!-- Cuti -->
+      <div id="panelCuti" class="hidden">
+        <div class="info hidden" id="infoCuti"></div>
+        <div id="daftarCuti" class="hidden" style="margin-top:14px"></div>
+        <div class="tanggal" style="margin-top:14px">
+          <label>Tanggal<input type="date" id="tglCuti" class="isian"></label>
+        </div>
+        <button class="kirim" id="kirimCuti" type="button" disabled>Memuat status…</button>
+      </div>
+
+      <!-- Rekap (admin) -->
+      <div id="panelRekap" class="hidden">
+        <span class="judul" style="margin-top:0">Bulan</span>
+        <input type="month" id="rekapBulan" class="isian">
+        <span class="judul">Karyawan</span>
+        <select id="rekapUntuk" class="isian"></select>
+        <div id="rekapRingkas" style="margin-top:16px"></div>
+        <div id="rekapRows"></div>
+      </div>
+
+      <!-- Slip gaji -->
+      <div id="panelSlip" class="hidden">
+        <div id="slipStaff"></div>
+        <div id="slipAdmin" class="hidden">
+          <span class="judul" style="margin-top:0">Karyawan</span>
+          <select id="slipUntuk" class="isian"></select>
+          <span class="judul">Bulan gaji</span>
+          <input type="month" id="slipBulan" class="isian">
+          <span class="judul">File slip gaji (PDF)</span>
+          <input type="file" id="slipFile" class="isian" accept="application/pdf">
+          <button class="kirim" id="btnUnggah" type="button">Unggah slip</button>
+          <span class="judul" style="margin-top:22px">Slip yang sudah diunggah</span>
+          <div id="slipSemua"></div>
+        </div>
+      </div>
+
+      <div class="pesan" id="pesan"></div>
+    </section>
+
+    <div id="blokHariIni">
+      <h2>Hari ini</h2>
+      <section class="kartu" id="hariIni"><div class="kosong">Memuat…</div></section>
+    </div>
+  </div>
 </main>
 
 <div id="kamera" class="hidden">
@@ -133,16 +194,16 @@ h2{font-family:Georgia,serif;font-weight:normal;font-size:19px;margin:26px 4px 1
 <script>
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwK4JxWSGq4K843Tmo6499HKDSjN5FAf0O0Sk4ifbKNrycDwwDKqoIITNJSqYN-T02e/exec';
 const KUNCI = 'absen';
-let DAFTAR_NAMA = [
-  'INTAN NURAINI PUTRI SUDRAJAT',
-  'ALFIA RINJANI',
-  'TRI RISKA DEWI',
-  'CHANTIKA NOVI DEVANTI'
+let PENGGUNA = [
+  {nama:'INTAN NURAINI PUTRI SUDRAJAT', peran:''},
+  {nama:'ALFIA RINJANI', peran:''},
+  {nama:'TRI RISKA DEWI', peran:''},
+  {nama:'CHANTIKA NOVI DEVANTI', peran:''}
 ];
 
 const $ = id => document.getElementById(id);
-const NAMA_JENIS = {CUTI:'Cuti', IZIN:'Izin', SAKIT:'Sakit'};
-let tab = 'absen', terpilih = '', status = null, fotoData = '', sedangKirim = false, baris = [];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let user = '', sandi = '', peran = '', tab = 'absen', status = null, fotoData = '', sedangKirim = false;
 
 /* ---------- jam & tanggal ---------- */
 function hariIniStr(){ return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Jakarta'}); }
@@ -156,120 +217,134 @@ tick(); setInterval(tick, 10000);
 function setTanggalCuti(){
   const t = hariIniStr();
   const d = new Date(t + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 365);
-  const maks = d.toISOString().slice(0,10);
-  $('tglCuti').min = t; $('tglCuti').max = maks;
+  $('tglCuti').min = t; $('tglCuti').max = d.toISOString().slice(0,10);
   if(!$('tglCuti').value) $('tglCuti').value = t;
 }
 setTanggalCuti();
 
+/* ---------- komunikasi dengan Google Sheet ---------- */
+async function kirim(post){
+  const r = await fetch(URL_SCRIPT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(Object.assign({kunci:KUNCI, nama:user, pin:sandi}, post))});
+  return r.json();
+}
+function cek(h){
+  if(!h.ok){ const e = new Error(h.error || 'gagal'); e.server = true; throw e; }
+  return h;
+}
+function pesanGalat(e){ return e && e.server ? e.message : 'Tidak bisa terhubung. Cek internet lalu coba lagi.'; }
+function tampilPesan(teks, jenis){ const p = $('pesan'); p.textContent = teks; p.className = 'pesan ' + jenis; }
+
+/* ---------- login ---------- */
+function gambarLogin(pilih){
+  $('pilihNama').innerHTML = '<option value="">Pilih nama…</option>' +
+    PENGGUNA.map(p => '<option value="'+esc(p.nama)+'"'+(p.nama===pilih?' selected':'')+'>'+esc(p.nama)+'</option>').join('');
+}
+function pesanLogin(t){ const p = $('pesanLogin'); p.textContent = t; p.className = t ? 'pesan err' : 'pesan'; }
+
+async function login(nama, kataSandi, otomatis){
+  if(!nama) return pesanLogin('Pilih nama pengguna.');
+  if(!kataSandi) return pesanLogin('Isi kata sandi.');
+  $('btnMasuk').disabled = true; $('btnMasuk').textContent = 'Memeriksa…'; pesanLogin('');
+  try{
+    const h = cek(await kirim({aksi:'login', nama:nama, pin:kataSandi}));
+    user = h.nama; sandi = kataSandi; peran = h.peran || '';
+    try{
+      localStorage.setItem('absen_nama', user);
+      if($('ingat').checked) localStorage.setItem('absen_sandi', sandi); else localStorage.removeItem('absen_sandi');
+    }catch(e){}
+    $('sandi').value = '';
+    bukaApp();
+  }catch(e){
+    pesanLogin(pesanGalat(e));
+    if(otomatis && e.server){ try{ localStorage.removeItem('absen_sandi'); }catch(x){} }
+  }
+  $('btnMasuk').disabled = false; $('btnMasuk').textContent = 'Masuk';
+}
+$('btnMasuk').onclick = () => login($('pilihNama').value, $('sandi').value);
+$('sandi').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnMasuk').click(); });
+
+function keluar(){
+  user = sandi = peran = ''; status = null; fotoData = '';
+  try{ localStorage.removeItem('absen_sandi'); }catch(e){}
+  $('layarApp').classList.add('hidden'); $('layarLogin').classList.remove('hidden');
+  $('sandi').value = ''; pesanLogin('');
+  gambarLogin(localStorage.getItem('absen_nama') || '');
+}
+$('btnKeluar').onclick = keluar;
+
+function bukaApp(){
+  $('layarLogin').classList.add('hidden'); $('layarApp').classList.remove('hidden');
+  const admin = peran === 'admin';
+  $('sapa').textContent = 'Halo, ' + user + (admin ? ' (admin)' : '');
+  $('tab_absen').classList.toggle('hidden', admin);
+  $('tab_cuti').classList.toggle('hidden', admin);
+  $('tab_rekap').classList.toggle('hidden', !admin);
+  $('blokHariIni').classList.toggle('hidden', admin);
+  $('pesan').className = 'pesan';
+  if(admin){ setTab('rekap'); }
+  else {
+    if(!sudahMintaLokasi){ sudahMintaLokasi = true; ambilLokasi(); } // supaya dialog izin lokasi muncul di awal
+    setTab('absen'); muatHariIni();
+  }
+}
+
 /* ---------- tab ---------- */
+const PANEL = {absen:'panelAbsen', cuti:'panelCuti', rekap:'panelRekap', slip:'panelSlip'};
 function setTab(t){
   tab = t;
-  $('tabAbsen').classList.toggle('aktif', t==='absen');
-  $('tabCuti').classList.toggle('aktif', t==='cuti');
-  $('panelAbsen').classList.toggle('hidden', t!=='absen');
-  $('panelCuti').classList.toggle('hidden', t!=='cuti');
+  ['absen','cuti','rekap','slip'].forEach(k => {
+    $('tab_'+k).classList.toggle('aktif', k === t);
+    $(PANEL[k]).classList.toggle('hidden', k !== t);
+  });
   $('pesan').className = 'pesan';
-  ubahTombol();
-  if(t==='cuti' && terpilih && $('pin').value.length === 4) muatStatus();
+  if(t === 'absen' || t === 'cuti') muatStatus();
+  if(t === 'rekap') muatRekap();
+  if(t === 'slip') muatSlip();
 }
-$('tabAbsen').onclick = () => setTab('absen');
-$('tabCuti').onclick = () => setTab('cuti');
+['absen','cuti','rekap','slip'].forEach(k => $('tab_'+k).onclick = () => setTab(k));
 
-/* ---------- daftar nama ---------- */
-function statusDariBaris(nama){
-  const r = baris.filter(x => x.nama.toLowerCase() === nama.toLowerCase()).pop();
-  if(!r) return null;
-  if(NAMA_JENIS[r.masuk]) return r.cuti === 'Menunggu' ? ['cuti', NAMA_JENIS[r.masuk]+' menunggu'] : ['cuti', NAMA_JENIS[r.masuk]];
-  if(r.pulang) return ['selesai','Selesai'];
-  return ['masuk','Sudah masuk'];
-}
-function gambarNama(){
-  $('pilihNama').innerHTML = '<option value="">Pilih nama…</option>' + DAFTAR_NAMA.map(n => {
-    const st = statusDariBaris(n);
-    return '<option value="'+n+'"'+(n===terpilih?' selected':'')+'>'+n+(st?'  ('+st[1]+')':'')+'</option>';
-  }).join('');
-}
-$('pilihNama').onchange = e => {
-  const n = e.target.value;
-  if(!n){ terpilih = ''; status = null; $('pin').value = ''; $('info').className = 'info hidden'; $('infoCuti').className = 'info hidden'; ubahTombol(); return; }
-  pilihNama(n);
-};
-
-async function pilihNama(n){
-  if(!sudahMintaLokasi){ sudahMintaLokasi = true; ambilLokasi(); }
-  terpilih = n; status = null; $('pilihNama').value = n;
-  try{ localStorage.setItem('absen_nama', n); $('pin').value = localStorage.getItem('absen_pin_'+n) || ''; }catch(e){ $('pin').value = ''; }
-  $('infoCuti').className = 'info hidden'; $('daftarCuti').className = 'hidden';
-  $('pesan').className = 'pesan';
-  ubahTombol();
-  await muatStatus();
-}
-
+/* ---------- status absen & cuti ---------- */
 function gambarDaftarCuti(list){
   const el = $('daftarCuti');
   if(!list.length){ el.className = 'hidden'; el.innerHTML = ''; return; }
   const kelas = {Disetujui:'masuk', Ditolak:'cuti'};
-  el.innerHTML = '<span class="judul" style="margin:0 0 4px">Catatan kamu</span>' + list.map(c => {
+  el.innerHTML = '<span class="judul" style="margin:0 0 4px">Pengajuan cuti kamu</span>' + list.map(c => {
     const t = new Date(c.tanggal + 'T00:00:00Z').toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
-    return '<div class="cutiBaris"><span>'+esc(c.jenis||'Cuti')+' · '+t+'</span><span class="chip st '+(kelas[c.status]||'')+'">'+esc(c.status)+'</span></div>';
+    return '<div class="cutiBaris"><span>'+t+'</span><span class="chip st '+(kelas[c.status]||'')+'">'+esc(c.status)+'</span></div>';
   }).join('');
   el.className = '';
 }
 
 async function muatStatus(){
-  const n = terpilih, pin = $('pin').value.trim();
-  if(!n) return;
   status = null; ubahTombol();
-  if(pin.length < 4){ $('info').className = 'info'; $('info').textContent = 'Masukkan PIN kamu.'; return; }
   $('info').className = 'info'; $('info').textContent = 'Mengecek status…';
   try{
-    const h = await kirim({aksi:'status', nama:n});
-    if(!h.ok){ const er = new Error(h.error || 'gagal'); er.server = true; throw er; }
-    if(terpilih !== n) return;
+    const h = cek(await kirim({aksi:'status'}));
     status = h;
-    try{ localStorage.setItem('absen_pin_'+n, pin); }catch(e){}
     let t = '';
     if(h.status==='masuk') t = 'Belum absen hari ini. Kirim akan tercatat sebagai absen masuk.';
     if(h.status==='pulang') t = 'Sudah masuk pukul ' + h.jamMasuk + '. Kirim akan tercatat sebagai absen pulang.';
     if(h.status==='selesai') t = 'Absen hari ini sudah lengkap (masuk ' + (h.jamMasuk||'-') + ', pulang ' + h.jamPulang + ').';
-    if(h.status==='cuti') t = 'Hari ini tercatat ' + (h.jenis||'cuti').toLowerCase() + '.';
+    if(h.status==='cuti') t = 'Hari ini tercatat cuti.';
     $('info').textContent = t;
-    $('infoCuti').textContent = 'Tahun ini: cuti ' + h.cutiTahunIni + ' hari · izin ' + (h.izinTahunIni||0) + ' hari · sakit ' + (h.sakitTahunIni||0) + ' hari.' + (h.cutiMenunggu ? ' Menunggu persetujuan: ' + h.cutiMenunggu + ' hari.' : '');
+    $('infoCuti').textContent = 'Cuti disetujui tahun ini: ' + h.cutiTahunIni + ' hari.' + (h.cutiMenunggu ? ' Menunggu persetujuan: ' + h.cutiMenunggu + ' hari.' : '');
     $('infoCuti').className = 'info';
     gambarDaftarCuti(h.cutiDaftar || []);
   }catch(e){
-    if(e.server){
-      $('info').textContent = e.message;
-      if(e.message === 'PIN salah'){ try{ localStorage.removeItem('absen_pin_'+n); }catch(x){} }
-    } else {
-      $('info').textContent = 'Status belum bisa dimuat (' + (e && e.message ? e.message : 'tidak ada koneksi') + '). Ketuk nama lagi untuk mencoba ulang.';
-    }
+    $('info').textContent = 'Status belum bisa dimuat (' + (e.server ? e.message : 'tidak ada koneksi') + '). Pindah tab lalu kembali untuk mencoba ulang.';
   }
   ubahTombol();
 }
 
-$('pin').oninput = () => {
-  $('pin').value = $('pin').value.replace(/\D/g,'').slice(0,4);
-  if(terpilih && $('pin').value.length === 4) muatStatus();
-  else if(terpilih){ status = null; ubahTombol(); }
-};
-
-function teksTombolJenis(){
-  const j = $('jenis').value;
-  return j === 'Sakit' ? 'Catat sakit' : j === 'Izin' ? 'Ajukan izin' : 'Ajukan cuti';
-}
-$('jenis').onchange = () => ubahTombol();
-
 function ubahTombol(){
   const a = $('kirimAbsen'), c = $('kirimCuti');
   if(sedangKirim) return;
-  if(!terpilih){ a.disabled = c.disabled = true; a.textContent = c.textContent = 'Pilih nama dulu'; return; }
-  if(!status){ a.disabled = true; a.textContent = $('pin').value.length < 4 ? 'Masukkan PIN dulu' : 'Memuat status…'; c.disabled = true; c.textContent = 'Masukkan PIN dulu'; return; }
-  c.disabled = false; c.textContent = teksTombolJenis();
+  if(!status){ a.disabled = c.disabled = true; a.textContent = c.textContent = 'Memuat status…'; return; }
+  c.disabled = false; c.textContent = 'Ajukan cuti';
   if(status.status==='masuk'){ a.disabled = false; a.textContent = 'Kirim absen masuk'; }
   else if(status.status==='pulang'){ a.disabled = false; a.textContent = 'Kirim absen pulang'; }
-  else { a.disabled = true; a.textContent = status.status==='cuti' ? 'Hari ini ' + (status.jenis||'cuti').toLowerCase() : 'Absen hari ini sudah lengkap'; }
+  else { a.disabled = true; a.textContent = status.status==='cuti' ? 'Hari ini cuti' : 'Absen hari ini sudah lengkap'; }
 }
 
 /* ---------- foto ---------- */
@@ -281,7 +356,6 @@ function prosesGambar(src, w, h){
   fotoData = c.toDataURL('image/jpeg', 0.7);
   $('kotakFoto').innerHTML = '<img alt="Foto selfie" src="'+fotoData+'">';
 }
-
 $('ambilFoto').onchange = e => {
   const f = e.target.files[0];
   if(!f) return;
@@ -299,7 +373,7 @@ function tutupKamera(){
 }
 $('kotakFoto').addEventListener('click', async e => {
   const desktop = !window.matchMedia('(pointer:coarse)').matches;
-  if(!desktop || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return; // pakai input file
+  if(!desktop || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return;
   e.preventDefault();
   try{
     streamKamera = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}, audio:false});
@@ -317,15 +391,14 @@ $('jepret').onclick = () => {
 };
 $('batalKamera').onclick = tutupKamera;
 
+/* ---------- lokasi ---------- */
 function ambilLokasi(){
   return new Promise(res => {
     if(!navigator.geolocation) return res({err:'tidak_didukung'});
     const ok = p => res({lat:p.coords.latitude, lng:p.coords.longitude});
     const gagal = e => res({err: e.code === 1 ? 'ditolak' : (e.code === 3 ? 'timeout' : 'tidak_tersedia')});
-    // 1) cepat: lokasi dari Wi-Fi/jaringan (boleh hasil beberapa menit terakhir)
     navigator.geolocation.getCurrentPosition(ok, e => {
       if(e.code === 1) return gagal(e);
-      // 2) lambat tapi akurat: GPS satelit, beri waktu lebih lama
       navigator.geolocation.getCurrentPosition(ok, gagal, {enableHighAccuracy:true, timeout:25000, maximumAge:0});
     }, {enableHighAccuracy:false, timeout:8000, maximumAge:120000});
   });
@@ -338,16 +411,9 @@ const PESAN_LOKASI = {
 };
 let sudahMintaLokasi = false;
 
-function tampilPesan(teks, jenis){ const p = $('pesan'); p.textContent = teks; p.className = 'pesan ' + jenis; }
-
-async function kirim(post){
-  const r = await fetch(URL_SCRIPT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({kunci:KUNCI, pin:$('pin').value.trim()}, post))});
-  return r.json();
-}
-
 /* ---------- kirim absen ---------- */
 $('kirimAbsen').onclick = async () => {
-  if(!terpilih || !status) return;
+  if(!status) return;
   if(!fotoData) return tampilPesan('Ambil foto selfie dulu.', 'err');
   const aksi = status.status;
   sedangKirim = true; $('kirimAbsen').disabled = true; $('kirimAbsen').textContent = 'Mengirim…';
@@ -362,60 +428,158 @@ $('kirimAbsen').onclick = async () => {
   }
   $('lokasi').className = 'lokasi ok'; $('lokasi').textContent = 'Lokasi terdeteksi.';
   try{
-    const h = await kirim({aksi, nama:terpilih, foto:fotoData, lat:pos.lat, lng:pos.lng});
-    if(h.ok){
-      tampilPesan('Absen ' + aksi + ' tercatat pukul ' + h.jam + '. Terima kasih!', 'ok');
-      fotoData = ''; $('ambilFoto').value = '';
-      $('kotakFoto').innerHTML = '<span>Ketuk untuk foto selfie</span><small>Kamera depan akan terbuka</small>';
-      sedangKirim = false;
-      await muatHariIni();
-      await pilihNama(terpilih);
-      return;
-    } else tampilPesan(h.error || 'Gagal menyimpan.', 'err');
-  }catch(e){ tampilPesan('Tidak bisa terhubung. Cek internet lalu coba lagi.', 'err'); }
+    const h = cek(await kirim({aksi, foto:fotoData, lat:pos.lat, lng:pos.lng}));
+    tampilPesan('Absen ' + aksi + ' tercatat pukul ' + h.jam + '. Terima kasih!', 'ok');
+    fotoData = ''; $('ambilFoto').value = '';
+    $('kotakFoto').innerHTML = '<span>Ketuk untuk foto selfie</span><small>Kamera depan akan terbuka</small>';
+    sedangKirim = false;
+    await muatHariIni();
+    await muatStatus();
+    return;
+  }catch(e){ tampilPesan(pesanGalat(e), 'err'); }
   sedangKirim = false; ubahTombol();
 };
 
 /* ---------- ajukan cuti ---------- */
 $('kirimCuti').onclick = async () => {
-  if(!terpilih) return;
-  const dari = $('tglCuti').value, sampai = dari;
-  if(!dari) return tampilPesan('Pilih tanggal dulu.', 'err');
+  if(!status) return;
+  const dari = $('tglCuti').value;
+  if(!dari) return tampilPesan('Pilih tanggal cuti.', 'err');
   sedangKirim = true; $('kirimCuti').disabled = true; $('kirimCuti').textContent = 'Mengirim…';
   $('pesan').className = 'pesan';
   try{
-    const jenis = $('jenis').value;
-    const h = await kirim({aksi:'cuti', nama:terpilih, dari, sampai, jenis});
-    if(h.ok){
-      tampilPesan(h.menunggu ? 'Pengajuan ' + jenis.toLowerCase() + ' tanggal ' + dari + ' terkirim dan menunggu persetujuan.' : 'Sakit tanggal ' + dari + ' tercatat. Semoga lekas sembuh!', 'ok');
-      sedangKirim = false;
-      await muatHariIni();
-      await pilihNama(terpilih);
-      return;
-    } else tampilPesan(h.error || 'Gagal menyimpan.', 'err');
-  }catch(e){ tampilPesan('Tidak bisa terhubung. Cek internet lalu coba lagi.', 'err'); }
+    cek(await kirim({aksi:'cuti', dari:dari, sampai:dari}));
+    tampilPesan('Pengajuan cuti tanggal ' + dari + ' terkirim dan menunggu persetujuan.', 'ok');
+    sedangKirim = false;
+    await muatHariIni();
+    await muatStatus();
+    return;
+  }catch(e){ tampilPesan(pesanGalat(e), 'err'); }
   sedangKirim = false; ubahTombol();
 };
 
 /* ---------- daftar hari ini ---------- */
 async function muatHariIni(){
   try{
-    const h = await kirim({aksi:'hariini'});
-    if(!h.ok) throw 0;
-    baris = h.rows;
-    $('hariIni').innerHTML = baris.length
-      ? baris.map(r => '<div class="baris"><span>'+esc(r.nama)+'</span><span class="w">'+(NAMA_JENIS[r.masuk] ? (r.cuti==='Menunggu' ? NAMA_JENIS[r.masuk]+' (menunggu)' : NAMA_JENIS[r.masuk]) : 'masuk '+(r.masuk||'-')+' · pulang '+(r.pulang||'-'))+'</span></div>').join('')
+    const h = cek(await kirim({aksi:'hariini'}));
+    $('hariIni').innerHTML = h.rows.length
+      ? h.rows.map(r => '<div class="baris"><span>'+esc(r.nama)+'</span><span class="w">'+(r.masuk==='CUTI' ? (r.cuti==='Menunggu' ? 'Cuti (menunggu)' : 'Cuti') : 'masuk '+(r.masuk||'-')+' · pulang '+(r.pulang||'-'))+'</span></div>').join('')
       : '<div class="kosong">Belum ada yang absen hari ini.</div>';
   }catch(e){ $('hariIni').innerHTML = '<div class="kosong">Daftar belum bisa dimuat.</div>'; }
-  gambarNama();
 }
-function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-gambarNama();
+/* ---------- rekap semua karyawan (admin) ---------- */
+function teksMenit(m){
+  const j = Math.floor(m / 60), s = m % 60;
+  return ((j ? j + ' jam ' : '') + (s ? s + ' menit' : '')).trim() || '0';
+}
+async function muatRekap(){
+  if(!$('rekapUntuk').options.length){
+    $('rekapUntuk').innerHTML = '<option value="">Semua karyawan</option>' +
+      PENGGUNA.filter(p => p.peran !== 'admin').map(p => '<option value="'+esc(p.nama)+'">'+esc(p.nama)+'</option>').join('');
+  }
+  if(!$('rekapBulan').value) $('rekapBulan').value = hariIniStr().slice(0,7);
+  $('rekapRingkas').innerHTML = ''; $('rekapRows').innerHTML = '<div class="kosong">Memuat…</div>';
+  try{
+    const h = cek(await kirim({aksi:'rekap', bulan:$('rekapBulan').value, untuk:$('rekapUntuk').value}));
+    $('rekapRingkas').innerHTML = h.ringkas.map(g =>
+      '<div class="ringkas"><b>'+esc(g.nama)+'</b>Hadir '+g.hadir+' hari · Cuti '+g.cuti+' hari' +
+      (g.menunggu ? ' (+'+g.menunggu+' menunggu)' : '') + ' · Lembur ' + teksMenit(g.menit) + '</div>').join('');
+    $('rekapRows').innerHTML = h.rows.length ? h.rows.map(r => {
+      const t = new Date(r.tanggal + 'T00:00:00Z').toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+      const isi = r.cuti
+        ? 'Cuti <span class="chip st '+({Disetujui:'masuk',Ditolak:'cuti'}[r.cuti]||'')+'">'+esc(r.cuti)+'</span>'
+        : 'masuk ' + (esc(r.masuk) || '-') + ' · pulang ' + (esc(r.pulang) || '-') + (r.lembur ? ' · lembur ' + esc(r.lembur) : '');
+      const link = (u, teks) => u ? '<a href="'+esc(u)+'" target="_blank" rel="noopener">'+teks+'</a>' : '';
+      const tautan = link(r.lokasiUrl, 'Lokasi') + link(r.foto1, 'Foto masuk') + link(r.foto2, 'Foto pulang');
+      return '<div class="rekapBaris"><div class="rb1"><b>'+esc(r.nama)+'</b><span>'+t+'</span></div><div class="rb2">'+isi+'</div>' +
+             (tautan ? '<div class="rb3">'+tautan+'</div>' : '') + '</div>';
+    }).join('') : '<div class="kosong">Belum ada data di bulan ini.</div>';
+  }catch(e){ $('rekapRows').innerHTML = '<div class="kosong">'+esc(pesanGalat(e))+'</div>'; }
+}
+$('rekapBulan').onchange = muatRekap;
+$('rekapUntuk').onchange = muatRekap;
+
+/* ---------- slip gaji ---------- */
+function labelBulan(b){
+  return new Date(b + '-01T00:00:00Z').toLocaleDateString('id-ID',{month:'long',year:'numeric',timeZone:'UTC'});
+}
+function barisSlip(s, denganNama){
+  return '<div class="slipBaris" data-b="'+esc(s.bulan)+'" data-u="'+esc(s.nama||'')+'">' +
+    '<span>'+(denganNama ? '<b>'+esc(s.nama)+'</b><br>' : '')+labelBulan(s.bulan)+'</span>' +
+    '<span class="aksiSlip"><button class="btnKecil" type="button">Lihat</button></span></div>';
+}
+async function muatSlip(){
+  if(peran === 'admin'){
+    $('slipStaff').classList.add('hidden'); $('slipAdmin').classList.remove('hidden');
+    $('slipUntuk').innerHTML = PENGGUNA.filter(p => p.peran !== 'admin').map(p => '<option value="'+esc(p.nama)+'">'+esc(p.nama)+'</option>').join('');
+    if(!$('slipBulan').value) $('slipBulan').value = hariIniStr().slice(0,7);
+    $('slipSemua').innerHTML = '<div class="kosong">Memuat…</div>';
+    try{
+      const h = cek(await kirim({aksi:'slip_semua'}));
+      $('slipSemua').innerHTML = h.slip.length ? h.slip.map(s => barisSlip(s, true)).join('') : '<div class="kosong">Belum ada slip yang diunggah.</div>';
+    }catch(e){ $('slipSemua').innerHTML = '<div class="kosong">'+esc(pesanGalat(e))+'</div>'; }
+    return;
+  }
+  $('slipAdmin').classList.add('hidden'); $('slipStaff').classList.remove('hidden');
+  $('slipStaff').innerHTML = '<div class="kosong">Memuat…</div>';
+  try{
+    const h = cek(await kirim({aksi:'slip_daftar'}));
+    $('slipStaff').innerHTML = h.slip.length ? h.slip.map(s => barisSlip(s, false)).join('') : '<div class="kosong">Belum ada slip gaji untuk kamu.</div>';
+  }catch(e){ $('slipStaff').innerHTML = '<div class="kosong">'+esc(pesanGalat(e))+'</div>'; }
+}
+
+async function bukaSlip(el){
+  const aks = el.querySelector('.aksiSlip');
+  aks.textContent = 'Memuat…';
+  try{
+    const h = cek(await kirim({aksi:'slip_ambil', bulan:el.dataset.b, untuk:el.dataset.u}));
+    const bin = atob(h.data), arr = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([arr], {type:'application/pdf'}));
+    aks.innerHTML = '<a class="btnKecil" href="'+url+'" target="_blank" rel="noopener">Buka</a> <a class="btnKecil" href="'+url+'" download="'+esc(h.namaFile)+'">Unduh</a>';
+  }catch(e){
+    aks.innerHTML = '<button class="btnKecil" type="button">Lihat</button>';
+    tampilPesan(pesanGalat(e), 'err');
+  }
+}
+['slipStaff','slipSemua'].forEach(id => $(id).addEventListener('click', e => {
+  const b = e.target.closest('button.btnKecil');
+  if(b) bukaSlip(b.closest('.slipBaris'));
+}));
+
+$('btnUnggah').onclick = async () => {
+  const untuk = $('slipUntuk').value, bulan = $('slipBulan').value, f = $('slipFile').files[0];
+  if(!untuk || !bulan) return tampilPesan('Pilih karyawan dan bulan gaji.', 'err');
+  if(!f) return tampilPesan('Pilih file PDF slip gaji.', 'err');
+  if(f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) return tampilPesan('File harus berformat PDF.', 'err');
+  if(f.size > 5 * 1024 * 1024) return tampilPesan('File terlalu besar (maksimal 5 MB).', 'err');
+  $('btnUnggah').disabled = true; $('btnUnggah').textContent = 'Mengunggah…'; $('pesan').className = 'pesan';
+  try{
+    const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+    const file = 'data:application/pdf;base64,' + String(data).split(',')[1];
+    cek(await kirim({aksi:'slip_unggah', untuk:untuk, bulan:bulan, file:file}));
+    tampilPesan('Slip ' + labelBulan(bulan) + ' untuk ' + untuk + ' berhasil diunggah.', 'ok');
+    $('slipFile').value = '';
+    muatSlip();
+  }catch(e){ tampilPesan(pesanGalat(e), 'err'); }
+  $('btnUnggah').disabled = false; $('btnUnggah').textContent = 'Unggah slip';
+};
+
+/* ---------- mulai ---------- */
+gambarLogin(localStorage.getItem('absen_nama') || '');
 (async () => {
-  try{ const h = await kirim({aksi:'daftar'}); if(h.ok && h.nama.length) DAFTAR_NAMA = h.nama; }catch(e){}
-  await muatHariIni();
-  try{ const n = localStorage.getItem('absen_nama'); if(n && DAFTAR_NAMA.indexOf(n) >= 0) pilihNama(n); }catch(e){}
+  try{
+    const h = await (await fetch(URL_SCRIPT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({kunci:KUNCI, aksi:'daftar'})})).json();
+    if(h.ok){
+      if(h.pengguna && h.pengguna.length) PENGGUNA = h.pengguna;
+      else if(h.nama && h.nama.length) PENGGUNA = h.nama.map(n => ({nama:n, peran:''}));
+    }
+  }catch(e){}
+  let n = '', s = '';
+  try{ n = localStorage.getItem('absen_nama') || ''; s = localStorage.getItem('absen_sandi') || ''; }catch(e){}
+  gambarLogin(n);
+  if(n && s && PENGGUNA.some(p => p.nama === n)) login(n, s, true);
 })();
 </script>
 </body>
