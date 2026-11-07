@@ -76,8 +76,9 @@ select.isian{font-weight:600}
 .isian:focus-visible{outline:3px solid var(--kelopak)}
 .ingat{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;color:var(--redam)}
 .ingat input{width:18px;height:18px}
-.sapa{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 12px;font-size:15px;font-weight:600}
-.sapa button{border:0;background:transparent;color:var(--bunga);font-weight:700;font-size:15px;padding:6px 4px}
+.sapa{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 14px;font-size:15px;font-weight:600;color:#fff}
+.atas.masuk{padding-bottom:104px}
+.sapa button{border:0;background:transparent;color:var(--kelopak);font-weight:700;font-size:15px;padding:6px 4px}
 .slipBaris{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--garis);font-size:15px}
 .slipBaris:last-child{border-bottom:0}
 .aksiSlip{flex:none;display:flex;gap:8px;align-items:center;color:var(--redam);font-size:14px}
@@ -268,6 +269,7 @@ function keluar(){
   user = sandi = peran = ''; status = null; fotoData = '';
   try{ localStorage.removeItem('absen_sandi'); }catch(e){}
   $('layarApp').classList.add('hidden'); $('layarLogin').classList.remove('hidden');
+  document.querySelector('.atas').classList.remove('masuk');
   $('sandi').value = ''; pesanLogin('');
   gambarLogin(localStorage.getItem('absen_nama') || '');
 }
@@ -275,6 +277,7 @@ $('btnKeluar').onclick = keluar;
 
 function bukaApp(){
   $('layarLogin').classList.add('hidden'); $('layarApp').classList.remove('hidden');
+  document.querySelector('.atas').classList.add('masuk');
   const admin = peran === 'admin';
   $('sapa').textContent = 'Halo, ' + user + (admin ? ' (admin)' : '');
   $('tab_absen').classList.toggle('hidden', admin);
